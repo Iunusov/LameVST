@@ -1,6 +1,9 @@
 # LameVST
-Lame MP3 "emulator" in form of VST-plugin (mp3 as VST effect).
+MP3 as VST-effect. 
 
+Ideal solution, if you need to preview you track in the mp3-mode during playback.
+
+![LameVST](https://static.kvraudio.com/i/b/lamevst.png "LameVST")
 
 ## Prerequisites
 
