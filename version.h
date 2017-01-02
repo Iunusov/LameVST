@@ -13,3 +13,4 @@
 #define LAMEVST_VERSION_INT                                                 \
   ((LAMEVST_MAJOR_VERSION_INT * 1000) + (LAMEVST_MINOR_VERSION_INT * 100) + \
    LAMEVST_MAINT_VERSION_INT)
+
