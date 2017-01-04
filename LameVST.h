@@ -5,6 +5,7 @@
 #include "MP3Processor.h"
 
 #include <mutex>
+#include <vector>
 
 class LameVST : public AudioEffectX {
 public:
@@ -24,15 +25,16 @@ public:
   virtual float getParameter(VstInt32 index) override;
 
 private:
+  MP3Processor mp3Processor;
+  std::vector<float> pWAVBufferSrc;
   int lameBitrate;
   int lameBitrateLast;
   int lameChannelMode;
   int lameChannelModeLast;
-  float *pWAVBufferSrc = nullptr;
   size_t srcWavPos = 0;
   size_t dstWavPos = 0;
   bool bufferReady = false;
-  MP3Processor mp3Processor;
+  
   typedef std::lock_guard<std::recursive_mutex> guard;
   mutable std::recursive_mutex mtx_;
 };

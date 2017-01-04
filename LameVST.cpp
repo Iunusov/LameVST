@@ -17,10 +17,10 @@ LameVST::LameVST(audioMasterCallback audioMaster)
   setNumInputs(2);
   setNumOutputs(2);
   setUniqueID(CCONST('i', 'z', 'v', 'w'));
-  canProcessReplacing();
+  canProcessReplacing(true);
   canDoubleReplacing(false);
+  pWAVBufferSrc.reserve(mp3Processor.getWavBufferSize());
   mp3Processor.init((const int)getSampleRate(), lameBitrate, lameChannelMode);
-  pWAVBufferSrc = new float[mp3Processor.getWavBufferSize()];
   // TODO: calculate initial delay
   setInitialDelay(25344);
 }
@@ -29,21 +29,12 @@ LameVST::~LameVST() {}
 
 void LameVST::processReplacing(float **inputs, float **outputs,
                                VstInt32 sampleFrames) {
-  if (!inputs || !outputs || sampleFrames <= 0) {
-    return;
-  }
-
   const size_t frames = (size_t)sampleFrames;
 
   float *in1 = inputs[0];
   float *in2 = inputs[1];
   float *out1 = outputs[0];
   float *out2 = outputs[1];
-
-  for (size_t i(0); i < frames; ++i) {
-    out1[i] = 0;
-    out2[i] = 0;
-  }
 
   for (size_t i(0); i < frames; ++i) {
     pWAVBufferSrc[srcWavPos++] = in1[i];
@@ -60,7 +51,7 @@ void LameVST::processReplacing(float **inputs, float **outputs,
         lameBitrateLast = lameBitrate;
         lameChannelModeLast = lameChannelMode;
       }
-      mp3Processor.processWav(pWAVBufferSrc);
+      mp3Processor.processWav(pWAVBufferSrc.data());
       bufferReady = true;
     }
 
