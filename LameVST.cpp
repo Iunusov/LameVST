@@ -1,21 +1,18 @@
 #include "LameVST.h"
-#include <thread>
 #include "version.h"
 
 #define MIN_BITRATE (16)
 #define MAX_BITRATE (640)
 #define DEFAULT_BITRATE (128)
-#define DEFAULT_MODE (0)  // STEREO
+#define DEFAULT_MODE (0) // STEREO
 
-AudioEffect* createEffectInstance(audioMasterCallback audioMaster) {
+AudioEffect *createEffectInstance(audioMasterCallback audioMaster) {
   return new LameVST(audioMaster);
 }
 
 LameVST::LameVST(audioMasterCallback audioMaster)
-    : AudioEffectX(audioMaster, 1, 2),
-      lameBitrate(DEFAULT_BITRATE),
-      lameBitrateLast(DEFAULT_BITRATE),
-      lameChannelMode(DEFAULT_MODE),
+    : AudioEffectX(audioMaster, 1, 2), lameBitrate(DEFAULT_BITRATE),
+      lameBitrateLast(DEFAULT_BITRATE), lameChannelMode(DEFAULT_MODE),
       lameChannelModeLast(DEFAULT_MODE) {
   setNumInputs(2);
   setNumOutputs(2);
@@ -24,14 +21,13 @@ LameVST::LameVST(audioMasterCallback audioMaster)
   canDoubleReplacing(false);
   mp3Processor.init((const int)getSampleRate(), lameBitrate, lameChannelMode);
   pWAVBufferSrc = new float[mp3Processor.getWavBufferSize()];
-  noTail(false);
-  //TODO: calculate initial delay
-  setInitialDelay(1152);
+  // TODO: calculate initial delay
+  setInitialDelay(25344);
 }
 
 LameVST::~LameVST() {}
 
-void LameVST::processReplacing(float** inputs, float** outputs,
+void LameVST::processReplacing(float **inputs, float **outputs,
                                VstInt32 sampleFrames) {
   if (!inputs || !outputs || sampleFrames <= 0) {
     return;
@@ -39,10 +35,10 @@ void LameVST::processReplacing(float** inputs, float** outputs,
 
   const size_t frames = (size_t)sampleFrames;
 
-  float* in1 = inputs[0];
-  float* in2 = inputs[1];
-  float* out1 = outputs[0];
-  float* out2 = outputs[1];
+  float *in1 = inputs[0];
+  float *in2 = inputs[1];
+  float *out1 = outputs[0];
+  float *out2 = outputs[1];
 
   for (size_t i(0); i < frames; ++i) {
     out1[i] = 0;
@@ -83,17 +79,17 @@ VstInt32 LameVST::getVendorVersion() { return LAMEVST_VERSION_INT; }
 
 VstPlugCategory LameVST::getPlugCategory() { return kPlugCategEffect; }
 
-bool LameVST::getEffectName(char* name) {
+bool LameVST::getEffectName(char *name) {
   vst_strncpy(name, "LameVST", kVstMaxEffectNameLen);
   return true;
 }
 
-bool LameVST::getVendorString(char* text) {
-  vst_strncpy(text, "github.com/R-Tur/LameVST", kVstMaxVendorStrLen);
+bool LameVST::getVendorString(char *text) {
+  vst_strncpy(text, "github.com/Iunusov/LameVST", kVstMaxVendorStrLen);
   return true;
 }
 
-bool LameVST::getProductString(char* text) {
+bool LameVST::getProductString(char *text) {
   vst_strncpy(text, "LameVST", kVstMaxProductStrLen);
   return true;
 }
@@ -101,87 +97,87 @@ bool LameVST::getProductString(char* text) {
 void LameVST::setParameter(VstInt32 index, float value) {
   guard lock(mtx_);
   switch (index) {
-    case 0: {
-      lameBitrate = (int)(value * MAX_BITRATE);
-      if (lameBitrate < MIN_BITRATE) {
-        lameBitrate = MIN_BITRATE;
-      }
-      break;
+  case 0: {
+    lameBitrate = (int)(value * MAX_BITRATE);
+    if (lameBitrate < MIN_BITRATE) {
+      lameBitrate = MIN_BITRATE;
     }
-    case 1: {
-      lameChannelMode = 0;
-      if (value > 0.5) {
-        lameChannelMode = 1;
-      }
+    break;
+  }
+  case 1: {
+    lameChannelMode = 0;
+    if (value > 0.5) {
+      lameChannelMode = 1;
     }
-    default:
-      return;
+  }
+  default:
+    return;
   }
 }
 
-void LameVST::getParameterLabel(VstInt32 index, char* label) {
+void LameVST::getParameterLabel(VstInt32 index, char *label) {
   switch (index) {
-    case 0: {
-      vst_strncpy(label, "kbps", kVstMaxParamStrLen);
-      break;
-    }
-    case 1: {
-      vst_strncpy(label, "", kVstMaxParamStrLen);
-      break;
-    }
-    default: {
-      vst_strncpy(label, "", kVstMaxParamStrLen);
-      return;
-    }
+  case 0: {
+    vst_strncpy(label, "kbps", kVstMaxParamStrLen);
+    break;
+  }
+  case 1: {
+    vst_strncpy(label, "", kVstMaxParamStrLen);
+    break;
+  }
+  default: {
+    vst_strncpy(label, "", kVstMaxParamStrLen);
+    return;
+  }
   }
 }
 
-void LameVST::getParameterName(VstInt32 index, char* label) {
+void LameVST::getParameterName(VstInt32 index, char *label) {
   switch (index) {
-    case 0: {
-      vst_strncpy(label, "Bit rate", kVstMaxParamStrLen);
-      break;
-    }
-    case 1: {
-      vst_strncpy(label, "Mode", kVstMaxParamStrLen);
-      break;
-    }
-    default: {
-      vst_strncpy(label, "", kVstMaxParamStrLen);
-      return;
-    }
+  case 0: {
+    vst_strncpy(label, "Bit rate", kVstMaxParamStrLen);
+    break;
+  }
+  case 1: {
+    vst_strncpy(label, "Mode", kVstMaxParamStrLen);
+    break;
+  }
+  default: {
+    vst_strncpy(label, "", kVstMaxParamStrLen);
+    return;
+  }
   }
 }
 
-void LameVST::getParameterDisplay(VstInt32 index, char* text) {
+void LameVST::getParameterDisplay(VstInt32 index, char *text) {
   switch (index) {
-    case 0: {
-      int2string(mp3Processor.getBitRate(), text, kVstMaxParamStrLen);
-      break;
+  case 0: {
+    int2string(mp3Processor.getBitRate(), text, kVstMaxParamStrLen);
+    break;
+  }
+  case 1: {
+    if (1 == lameChannelMode) {
+      vst_strncpy(text, "JOINT", kVstMaxParamStrLen);
+    } else {
+      vst_strncpy(text, "STEREO", kVstMaxParamStrLen);
     }
-    case 1: {
-      if (1 == lameChannelMode) {
-        vst_strncpy(text, "JOINT", kVstMaxParamStrLen);
-      } else {
-        vst_strncpy(text, "STEREO", kVstMaxParamStrLen);
-      }
-      break;
-    }
-    default: {
-      vst_strncpy(text, "", kVstMaxParamStrLen);
-      return;
-    }
+    break;
+  }
+  default: {
+    vst_strncpy(text, "", kVstMaxParamStrLen);
+    return;
+  }
   }
 }
 
 float LameVST::getParameter(VstInt32 index) {
   guard lock(mtx_);
   switch (index) {
-    case 0:
-      return (float)mp3Processor.getBitRate() / (float)MAX_BITRATE;
-    case 1:
-      return (float)lameChannelMode;
-    default:
-      return 0;
+  case 0:
+    return (float)mp3Processor.getBitRate() / (float)MAX_BITRATE;
+  case 1:
+    return (float)lameChannelMode;
+  default:
+    return 0;
   }
 }
