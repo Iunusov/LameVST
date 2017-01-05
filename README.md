@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/Iunusov/LameVST.svg?branch=master)](https://travis-ci.org/Iunusov/LameVST)
 # LameVST
 MP3 as VST-effect. 
 

@@ -1,0 +1,5 @@
+/LameVST_DLL/
+/build/
+/build64/
+/deps/libmp3lame-CMAKE/
+/deps/vst_sdk_2.4/
