@@ -9,7 +9,9 @@ extern "C" {
 #if defined(__GNUC__) &&                                                       \
     ((__GNUC__ >= 4) || ((__GNUC__ == 3) && (__GNUC_MINOR__ >= 1)))
 #define VST_EXPORT __attribute__((visibility("default")))
-#else
+#elif WIN32
+#define VST_EXPORT __declspec(dllexport)
+#elif
 #define VST_EXPORT
 #endif
 
@@ -56,7 +58,7 @@ extern "C" {
 //------------------------------------------------------------------------
 /** Prototype of the export function main */
 //------------------------------------------------------------------------
-VST_EXPORT __declspec(dllexport) int main(audioMasterCallback audioMaster) {
+VST_EXPORT int main(audioMasterCallback audioMaster) {
   // Get VST Version
   if (!audioMaster(0, audioMasterVersion, 0, 0, 0, 0))
     return 0; // old version
