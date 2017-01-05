@@ -10,7 +10,7 @@ public:
    * Simple Circular buffer implementation, based on the array
    * @param max_size buffer max size
    */
-  RingBuffer(const size_t max_size) : MAX_SIZE(max_size), buffer_(max_size) {}
+  RingBuffer(const size_t capacity) : CAPACITY(capacity), buffer_(capacity) {}
   /**
   * Puts a chunk of data to the buffer
   * @param data buffer with the data
@@ -22,12 +22,12 @@ public:
       return false;
     }
     guard lock(mtx_);
-    if (size_ + size > MAX_SIZE) {
+    if (size_ + size > CAPACITY) {
       return false;
     }
     for (size_t i(0); i < size; i++) {
       buffer_[end_++] = data[i];
-      if (end_ >= MAX_SIZE) {
+      if (end_ >= CAPACITY) {
         end_ = 0;
       }
     }
@@ -51,7 +51,7 @@ public:
     const size_t returnCount = std::min(size_, size);
     for (size_t i(0); i < returnCount; i++) {
       data[i] = buffer_[start_++];
-      if (start_ >= MAX_SIZE) {
+      if (start_ >= CAPACITY) {
         start_ = 0;
       }
     }
@@ -60,22 +60,22 @@ public:
   }
   bool hasEnoughSpace(const size_t count) const {
     guard lock(mtx_);
-    return (size_ + count <= MAX_SIZE);
+    return (size_ + count <= CAPACITY);
   }
   size_t size() const {
     guard lock(mtx_);
     return size_;
   }
-  void clear() {
+  void reset() {
     guard lock(mtx_);
     size_ = 0;
     start_ = 0;
     end_ = 0;
   }
-  size_t max_size() const { return MAX_SIZE; }
+  size_t capacity() const { return CAPACITY; }
 
 private:
-  const size_t MAX_SIZE;
+  const size_t CAPACITY;
   size_t size_ = 0;
   size_t start_ = 0;
   size_t end_ = 0;

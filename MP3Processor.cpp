@@ -5,31 +5,20 @@
 #include <lame.h>
 
 #define NUM_CHANNELS (2)
-#define BUFFERS_COUNT (100)
+#define BUFFERS_COUNT (50)
 #define WAV_BUF_SIZE (576 * NUM_CHANNELS)
 // Set MP3 buffer size, conservative estimate
 #define MP3_BUF_SIZE ((size_t)(1.25f * (WAV_BUF_SIZE / NUM_CHANNELS) + 7200))
 
-int MP3Processor::getBitRate() const {
-  guard lock(mtx_);
-  if (!bInitialized || !lame_enc_handler) {
-    return 0;
-  }
-  return lame_get_brate((lame_global_flags *)lame_enc_handler);
+MP3Processor::MP3Processor() : outputPCMBuffer(WAV_BUF_SIZE * BUFFERS_COUNT) {
+  mp3Buffer.resize(MP3_BUF_SIZE);
+  decodedLeftChannel.resize(MP3_BUF_SIZE * 10);
+  decodedRightChannel.resize(MP3_BUF_SIZE * 10);
 }
-
-MP3Processor::MP3Processor()
-    : mp3Buffer(MP3_BUF_SIZE), decodedLeftChannel(MP3_BUF_SIZE * 10),
-      decodedRightChannel(MP3_BUF_SIZE * 10),
-      outputPCMBuffer(WAV_BUF_SIZE * BUFFERS_COUNT) {}
 
 MP3Processor::~MP3Processor() { deInit(); }
 
-size_t MP3Processor::getWavBufferSize() const { return WAV_BUF_SIZE; }
-
-bool MP3Processor::canReinit() const {
-  return outputPCMBuffer.size() >= WAV_BUF_SIZE;
-}
+size_t MP3Processor::getWorkBufferSize() const { return WAV_BUF_SIZE; }
 
 bool MP3Processor::init(const int sampleRate, const int bitrate,
                         const int mode) {
@@ -63,15 +52,9 @@ bool MP3Processor::init(const int sampleRate, const int bitrate,
     return false;
   }
   lame_dec_handler = hip_decode_init();
-  outputPCMBuffer.clear();
-  mp3Ready = false;
+  outputPCMBuffer.reset();
   bInitialized = true;
   return true;
-}
-
-bool MP3Processor::isInit() const {
-  guard lock(mtx_);
-  return bInitialized;
 }
 
 void MP3Processor::deInit() {
@@ -87,12 +70,12 @@ void MP3Processor::deInit() {
   }
 }
 
-bool MP3Processor::processWav(float *src) {
+void MP3Processor::addNextInput(float *src) {
   guard lock(mtx_);
   if (bInitialized) {
     const int encodedLength = lame_encode_buffer_interleaved_ieee_float(
         (lame_global_flags *)lame_enc_handler, src,
-        (int)(WAV_BUF_SIZE / NUM_CHANNELS), mp3Buffer.data(), mp3Buffer.size());
+        (int)(WAV_BUF_SIZE / NUM_CHANNELS), mp3Buffer.data(), MP3_BUF_SIZE);
     if (encodedLength > 0) {
       const int decodedLength =
           hip_decode((hip_global_flags *)lame_dec_handler, mp3Buffer.data(),
@@ -101,8 +84,8 @@ bool MP3Processor::processWav(float *src) {
 
       if (decodedLength > 0) {
         const size_t decodedSize = (size_t)decodedLength * NUM_CHANNELS;
-        if (readBuf.size() < decodedSize) {
-          readBuf.reserve(decodedSize);
+        if (readBuf.capacity() < decodedSize) {
+          readBuf.resize(decodedSize);
         }
         for (size_t i(0); i < (size_t)decodedLength; i++) {
           readBuf[NUM_CHANNELS * i] =
@@ -111,20 +94,19 @@ bool MP3Processor::processWav(float *src) {
               decodedRightChannel[i] / (float)std::numeric_limits<short>::max();
         }
         outputPCMBuffer.push(readBuf.data(), decodedSize);
-        // 40% prebuffering
-        if (outputPCMBuffer.size() >= outputPCMBuffer.max_size() * 0.4) {
-          mp3Ready = true;
-        }
       }
     }
   }
-  memset(src, 0, sizeof(float) * WAV_BUF_SIZE);
-  if (bInitialized && mp3Ready && outputPCMBuffer.size() >= WAV_BUF_SIZE) {
-    outputPCMBuffer.pull(src, WAV_BUF_SIZE);
-    if (outputPCMBuffer.size() < WAV_BUF_SIZE) {
-      mp3Ready = false;
-    }
-    return true;
-  }
-  return false;
+}
+
+bool MP3Processor::buffered(const double amount) const {
+  return outputPCMBuffer.size() >= outputPCMBuffer.capacity() * amount;
+}
+
+bool MP3Processor::hasReadyOutput(const size_t size) const {
+  return outputPCMBuffer.size() >= size;
+}
+
+size_t MP3Processor::getNextOutput(float *dst, const size_t maxsize) {
+  return outputPCMBuffer.pull(dst, maxsize);
 }

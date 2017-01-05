@@ -26,15 +26,14 @@ public:
 
 private:
   MP3Processor mp3Processor;
-  std::vector<float> pWAVBufferSrc;
-  int lameBitrate;
-  int lameBitrateLast;
-  int lameChannelMode;
-  int lameChannelModeLast;
-  size_t srcWavPos = 0;
-  size_t dstWavPos = 0;
-  bool bufferReady = false;
-  
+  std::vector<float> inputStereoBuffer;
+  std::vector<float> outputStereoBuffer;
+  int bitrateValue;
+  int lastBitrateValue;
+  int channelValue;
+  int lastChannelValue;
+  size_t inputStereoPos = 0;
+  bool readyToOutput = false;
   typedef std::lock_guard<std::recursive_mutex> guard;
   mutable std::recursive_mutex mtx_;
 };
