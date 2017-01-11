@@ -14,32 +14,22 @@ Ideal solution, if you need to preview you track in the mp3-mode during playback
 
 [GIT](https://git-scm.com/download/win)
 
-## Build
+## Windows Build
 
 ```
-git clone https://github.com/Iunusov/LameVST.git
+cd deps
+sync
+cd ..
+md build && cd build
+cmake ..   # Or whatever generator (-G) you want to use cmake --help for a list.
+cmake --build . --config Release
+start LameVST_Solution.sln
 ```
 
-```
-cd LameVST
-```
+or just use bat-file: 
 
 ```
 !!make_project!!.bat
-```
-
-## Build (x64)
-
-```
-mkdir build64
-```
-
-```
-cd build64
-```
-
-```
-cmake -G "Visual Studio 14 2015 Win64" ..
 ```
 
 ## Linux Build (e.g. UBUNTU)
