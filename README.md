@@ -16,15 +16,13 @@ Ideal solution, if you need to preview you track in the mp3-mode during playback
 
 ## Windows Build
 
-```
-cd deps
-sync
-cd ..
-md build && cd build
-cmake ..   # Or whatever generator (-G) you want to use cmake --help for a list.
-cmake --build . --config Release
-start LameVST_Solution.sln
-```
+    $ cd deps
+    $ sync
+    $ cd ..
+    $ md build && cd build
+    $ cmake ..   # Or whatever generator (-G) you want to use cmake --help for a list.
+    $ cmake --build . --config Release
+    $ start LameVST_Solution.sln
 
 or just use bat-file: 
 
@@ -34,22 +32,16 @@ or just use bat-file:
 
 ## Linux Build (e.g. UBUNTU)
 
-```
-sudo apt-get install build-essential
-```
-
-```
-cd deps
-./sync.sh
-cd ..
-```
-
-```
-mkdir build
-cd build
-cmake ..
-make
-```
+    $ sudo apt-get install build-essential
+    
+    $ cd deps
+    $ ./sync.sh
+    $ cd ..
+    
+    $ mkdir build
+    $ cd build
+    $ cmake ..
+    $ make
 
 ## Result
 
