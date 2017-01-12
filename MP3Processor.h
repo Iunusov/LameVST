@@ -2,7 +2,6 @@
 
 #include "RingBuffer.h"
 
-#include <mutex>
 #include <vector>
 
 class MP3Processor {
@@ -18,8 +17,6 @@ public:
   size_t getNextOutput(float *dst, const size_t maxsize);
 
 private:
-  typedef std::lock_guard<std::recursive_mutex> guard;
-  mutable std::recursive_mutex mtx_;
   bool bInitialized = false;
   void *lame_enc_handler = nullptr;
   void *lame_dec_handler = nullptr;

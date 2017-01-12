@@ -4,8 +4,8 @@
 
 #include "MP3Processor.h"
 
-#include <mutex>
 #include <vector>
+#include <atomic>
 
 class LameVST : public AudioEffectX {
 public:
@@ -28,12 +28,10 @@ private:
   MP3Processor mp3Processor;
   std::vector<float> inputStereoBuffer;
   std::vector<float> outputStereoBuffer;
-  int bitrateValue;
+  std::atomic<int> bitrateValue;
+  std::atomic<int> channelValue;
   int lastBitrateValue;
-  int channelValue;
   int lastChannelValue;
   size_t inputStereoPos = 0;
   bool readyToOutput = false;
-  typedef std::lock_guard<std::recursive_mutex> guard;
-  mutable std::recursive_mutex mtx_;
 };

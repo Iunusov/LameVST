@@ -46,7 +46,6 @@ void LameVST::processReplacing(float **inputs, float **outputs,
     inputStereoBuffer[inputStereoPos++] = in2[i];
     if (inputStereoPos >= mp3Processor.getWorkBufferSize()) {
       inputStereoPos = 0;
-      guard lock(mtx_);
       if ((bitrateValue != lastBitrateValue ||
            channelValue != lastChannelValue) &&
           readyToOutput) {
@@ -105,7 +104,6 @@ bool LameVST::getProductString(char *text) {
 }
 
 void LameVST::setParameter(VstInt32 index, float value) {
-  guard lock(mtx_);
   switch (index) {
   case 0: {
     bitrateValue = (int)(value * MAX_BITRATE);
@@ -160,7 +158,6 @@ void LameVST::getParameterName(VstInt32 index, char *label) {
 }
 
 void LameVST::getParameterDisplay(VstInt32 index, char *text) {
-  guard lock(mtx_);
   switch (index) {
   case 0: {
     int2string(bitrateValue, text, kVstMaxParamStrLen);
@@ -182,7 +179,6 @@ void LameVST::getParameterDisplay(VstInt32 index, char *text) {
 }
 
 float LameVST::getParameter(VstInt32 index) {
-  guard lock(mtx_);
   switch (index) {
   case 0:
     return (float)bitrateValue / (float)MAX_BITRATE;

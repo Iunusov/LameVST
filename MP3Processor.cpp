@@ -22,7 +22,6 @@ size_t MP3Processor::getWorkBufferSize() const { return WAV_BUF_SIZE; }
 
 bool MP3Processor::init(const int sampleRate, const int bitrate,
                         const int mode) {
-  guard lock(mtx_);
   deInit();
   lame_enc_handler = lame_init();
   if (!lame_enc_handler) {
@@ -58,7 +57,6 @@ bool MP3Processor::init(const int sampleRate, const int bitrate,
 }
 
 void MP3Processor::deInit() {
-  guard lock(mtx_);
   bInitialized = false;
   if (lame_enc_handler) {
     lame_close((lame_global_flags *)lame_enc_handler);
@@ -71,7 +69,6 @@ void MP3Processor::deInit() {
 }
 
 void MP3Processor::addNextInput(float *src) {
-  guard lock(mtx_);
   if (bInitialized) {
     const int encodedLength = lame_encode_buffer_interleaved_ieee_float(
         (lame_global_flags *)lame_enc_handler, src,

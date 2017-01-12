@@ -1,7 +1,6 @@
 #pragma once
 
 #include <algorithm>
-#include <mutex>
 #include <vector>
 
 template <class T> class RingBuffer {
@@ -21,7 +20,6 @@ public:
     if (!data || !size) {
       return false;
     }
-    guard lock(mtx_);
     if (size_ + size > CAPACITY) {
       return false;
     }
@@ -44,7 +42,6 @@ public:
     if (!data || !size) {
       return 0;
     }
-    guard lock(mtx_);
     if (!size_) {
       return 0;
     }
@@ -59,15 +56,12 @@ public:
     return returnCount;
   }
   bool hasEnoughSpace(const size_t count) const {
-    guard lock(mtx_);
     return (size_ + count <= CAPACITY);
   }
   size_t size() const {
-    guard lock(mtx_);
     return size_;
   }
   void reset() {
-    guard lock(mtx_);
     size_ = 0;
     start_ = 0;
     end_ = 0;
@@ -80,6 +74,4 @@ private:
   size_t start_ = 0;
   size_t end_ = 0;
   std::vector<T> buffer_;
-  typedef std::lock_guard<std::mutex> guard;
-  mutable std::mutex mtx_;
 };
