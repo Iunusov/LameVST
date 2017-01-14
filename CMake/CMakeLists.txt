@@ -18,3 +18,5 @@ aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/../ SOURCES)
 add_library(${PROJECT_NAME}  SHARED ${SOURCES})
 
 TARGET_LINK_LIBRARIES(${PROJECT_NAME} VST_SDK mp3lame)
+
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
