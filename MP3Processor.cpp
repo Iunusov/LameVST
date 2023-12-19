@@ -4,6 +4,8 @@
 
 #include <lame.h>
 
+#include <limits> // std::numeric_limits
+
 #define NUM_CHANNELS (2)
 #define BUFFERS_COUNT (50)
 #define WAV_BUF_SIZE (576 * NUM_CHANNELS)
