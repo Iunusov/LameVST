@@ -1,4 +1,3 @@
-[![Build Status](https://travis-ci.org/Iunusov/LameVST.svg?branch=master)](https://travis-ci.org/Iunusov/LameVST)
 # LameVST
 MP3 as VST-effect. 
 
@@ -14,34 +13,9 @@ Ideal solution, if you need to preview you track in the mp3-mode during playback
 
 [GIT](https://git-scm.com/download/win)
 
-## Windows Build
+## Build
 
-    $ cd deps
-    $ sync
-    $ cd ..
-    $ md build && cd build
-    $ cmake ..   # Or whatever generator (-G) you want to use cmake --help for a list.
-    $ cmake --build . --config Release
-    $ start LameVST_Solution.sln
-
-or just use bat-file: 
-
-```
-!!make_project!!.bat
-```
-
-## Linux Build (e.g. UBUNTU)
-
-    $ sudo apt-get install build-essential
-    
-    $ cd deps
-    $ ./sync.sh
-    $ cd ..
-    
-    $ mkdir build
-    $ cd build
-    $ cmake ..
-    $ make
+    $ ./make.cmd
 
 ## Result
 

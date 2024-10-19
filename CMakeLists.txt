@@ -1,34 +1,56 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.8)
 
-project (LameVST_Solution)
+project("LameVST" CXX)
 
-set(CMAKE_BUILD_TYPE Release)
+set(CMAKE_CXX_STANDARD 11)
 
-if((${CMAKE_CXX_COMPILER_ID} STREQUAL MSVC))
-  set(MYFLAGS "/O2 /WX- /MT")
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${MYFLAGS}")
-  set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${MYFLAGS}")
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${MYFLAGS}")
-  set(CMAKE_C_FLAGS_RELEASE "${CMAKE_C_FLAGS_RELEASE} ${MYFLAGS}")
+if(MSVC)
+  add_compile_options(/MT)
+  add_compile_options(/MP)
+  add_compile_options(/nologo)
+
+  #add_compile_options("$<$<CONFIG:Release>:/fp:strict>")
+  add_compile_options("$<$<CONFIG:Release>:/O2>")
   include(CheckSymbolExists)
   check_symbol_exists(snprintf "stdio.h" HAVE_SNPRINTF)
   if(NOT HAVE_SNPRINTF)
-  add_definitions(-Dsnprintf=_snprintf)
+    add_definitions(-Dsnprintf=_snprintf)
   endif()
 else()
-  set(MYFLAGS "-Ofast")
-  if(MINGW)
-    set(MYFLAGS "-static")
-  endif(MINGW)
-  set(CMAKE_C_FLAGS  "${CMAKE_C_FLAGS} ${MYFLAGS}")
-  set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} ${MYFLAGS}")
-  set(CMAKE_C_FLAGS_RELEASE  "${CMAKE_C_FLAGS_RELEASE} ${MYFLAGS}")
-  set(CMAKE_CXX_FLAGS_RELEASE  "${CMAKE_CXX_FLAGS_RELEASE} ${MYFLAGS}")
+  add_compile_options("$<$<CONFIG:Release>:-O2>")
+  add_compile_options("$<$<CONFIG:Release>:-fomit-frame-pointer>")
+  add_compile_options("$<$<CONFIG:Release>:-fno-exceptions>")
+  add_compile_options("$<$<CONFIG:Release>:-pipe>")
 endif()
 
-include_directories (${CMAKE_CURRENT_BINARY_DIR})
+set(LIBRARY_OUTPUT_PATH "${CMAKE_CURRENT_SOURCE_DIR}/LameVST_DLL")
 
-
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/ SUB_SOURCES)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/deps)
 
-add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/CMake)
+add_library(${PROJECT_NAME} SHARED ${SUB_SOURCES})
+target_link_libraries(${PROJECT_NAME} PRIVATE mp3lame VST_SDK)
+set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
+
+if(MSVC)
+  target_compile_options(${PROJECT_NAME} PRIVATE /W4)
+else()
+  target_compile_options(
+    ${PROJECT_NAME}
+    PRIVATE -Wall
+            -Wextra
+            -Wpedantic
+            -pedantic
+            # -Werror
+            -Wfatal-errors
+            -Wshadow
+            -Wunused
+            -Wdouble-promotion
+            -Wundef
+            -Wconversion
+            -fstack-protector-all
+            -fstack-protector-strong
+            -Werror=format-security
+            -D_FORTIFY_SOURCE=2
+            -D_GLIBCXX_ASSERTIONS)
+endif()

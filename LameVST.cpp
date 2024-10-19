@@ -4,18 +4,17 @@
 #define VST_PROGRAMMS_COUNT (1)
 #define VST_PARAMS_COUNT (2)
 #define VST_CHANNELS (2)
-
 #define MIN_BITRATE (16)
 #define MAX_BITRATE (320)
 #define DEFAULT_BITRATE (128)
 #define DEFAULT_MODE (0) // STEREO
 
-AudioEffect *createEffectInstance(audioMasterCallback audioMaster) {
-  return new LameVST(audioMaster);
+AudioEffect *createEffectInstance(audioMasterCallback master) noexcept {
+  return new LameVST(master);
 }
 
-LameVST::LameVST(audioMasterCallback audioMaster)
-    : AudioEffectX(audioMaster, VST_PROGRAMMS_COUNT, VST_PARAMS_COUNT),
+LameVST::LameVST(audioMasterCallback master) noexcept
+    : AudioEffectX(master, VST_PROGRAMMS_COUNT, VST_PARAMS_COUNT),
       bitrateValue(DEFAULT_BITRATE), lastBitrateValue(DEFAULT_BITRATE),
       channelValue(DEFAULT_MODE), lastChannelValue(DEFAULT_MODE) {
   setNumInputs(VST_CHANNELS);
@@ -24,15 +23,15 @@ LameVST::LameVST(audioMasterCallback audioMaster)
   canProcessReplacing(true);
   canDoubleReplacing(false);
   inputStereoBuffer.resize(mp3Processor.getWorkBufferSize());
-  mp3Processor.init((const int)getSampleRate(), bitrateValue, channelValue);
+  mp3Processor.init((int)getSampleRate(), bitrateValue, channelValue);
   // TODO: calculate initial delay
   setInitialDelay(17408);
 }
 
-LameVST::~LameVST() {}
+LameVST::~LameVST() noexcept {}
 
 void LameVST::processReplacing(float **inputs, float **outputs,
-                               VstInt32 sampleFrames) {
+                               VstInt32 sampleFrames) noexcept {
   const size_t frames = (size_t)sampleFrames;
   const size_t stereoBufSize = frames * 2;
 
@@ -50,8 +49,7 @@ void LameVST::processReplacing(float **inputs, float **outputs,
            channelValue != lastChannelValue) &&
           readyToOutput) {
         readyToOutput = false;
-        mp3Processor.init((const int)getSampleRate(), bitrateValue,
-                          channelValue);
+        mp3Processor.init((int)getSampleRate(), bitrateValue, channelValue);
         lastBitrateValue = bitrateValue;
         lastChannelValue = channelValue;
       }
@@ -84,46 +82,42 @@ void LameVST::processReplacing(float **inputs, float **outputs,
   }
 }
 
-VstInt32 LameVST::getVendorVersion() { return LAMEVST_VERSION_INT; }
+VstInt32 LameVST::getVendorVersion() noexcept { return LAMEVST_VERSION_INT; }
 
-VstPlugCategory LameVST::getPlugCategory() { return kPlugCategEffect; }
+VstPlugCategory LameVST::getPlugCategory() noexcept { return kPlugCategEffect; }
 
-bool LameVST::getEffectName(char *name) {
+bool LameVST::getEffectName(char *name) noexcept {
   vst_strncpy(name, "LameVST", kVstMaxEffectNameLen);
   return true;
 }
 
-bool LameVST::getVendorString(char *text) {
+bool LameVST::getVendorString(char *text) noexcept {
   vst_strncpy(text, "github.com/Iunusov/LameVST", kVstMaxVendorStrLen);
   return true;
 }
 
-bool LameVST::getProductString(char *text) {
+bool LameVST::getProductString(char *text) noexcept {
   vst_strncpy(text, "LameVST", kVstMaxProductStrLen);
   return true;
 }
 
-void LameVST::setParameter(VstInt32 index, float value) {
+void LameVST::setParameter(VstInt32 index, float value) noexcept {
   switch (index) {
   case 0: {
-    bitrateValue = (int)(value * MAX_BITRATE);
-    if (bitrateValue < MIN_BITRATE) {
-      bitrateValue = MIN_BITRATE;
-    }
+    const auto new_value{(int)(value * MAX_BITRATE)};
+    bitrateValue = (new_value < MIN_BITRATE) ? MIN_BITRATE : new_value;
     break;
   }
   case 1: {
-    channelValue = 0;
-    if (value > 0.5) {
-      channelValue = 1;
-    }
+    channelValue = (value > 0.5f) ? 1 : 0;
+    break;
   }
   default:
     return;
   }
 }
 
-void LameVST::getParameterLabel(VstInt32 index, char *label) {
+void LameVST::getParameterLabel(VstInt32 index, char *label) noexcept {
   switch (index) {
   case 0: {
     vst_strncpy(label, "kbps", kVstMaxParamStrLen);
@@ -140,7 +134,7 @@ void LameVST::getParameterLabel(VstInt32 index, char *label) {
   }
 }
 
-void LameVST::getParameterName(VstInt32 index, char *label) {
+void LameVST::getParameterName(VstInt32 index, char *label) noexcept {
   switch (index) {
   case 0: {
     vst_strncpy(label, "Bit rate", kVstMaxParamStrLen);
@@ -157,7 +151,7 @@ void LameVST::getParameterName(VstInt32 index, char *label) {
   }
 }
 
-void LameVST::getParameterDisplay(VstInt32 index, char *text) {
+void LameVST::getParameterDisplay(VstInt32 index, char *text) noexcept {
   switch (index) {
   case 0: {
     int2string(bitrateValue, text, kVstMaxParamStrLen);
@@ -178,7 +172,7 @@ void LameVST::getParameterDisplay(VstInt32 index, char *text) {
   }
 }
 
-float LameVST::getParameter(VstInt32 index) {
+float LameVST::getParameter(VstInt32 index) noexcept {
   switch (index) {
   case 0:
     return (float)bitrateValue / (float)MAX_BITRATE;

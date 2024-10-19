@@ -12,18 +12,19 @@
 // Set MP3 buffer size, conservative estimate
 #define MP3_BUF_SIZE ((size_t)(1.25f * (WAV_BUF_SIZE / NUM_CHANNELS) + 7200))
 
-MP3Processor::MP3Processor() : outputPCMBuffer(WAV_BUF_SIZE * BUFFERS_COUNT) {
+MP3Processor::MP3Processor() noexcept
+    : outputPCMBuffer(WAV_BUF_SIZE * BUFFERS_COUNT) {
   mp3Buffer.resize(MP3_BUF_SIZE);
   decodedLeftChannel.resize(MP3_BUF_SIZE * 10);
   decodedRightChannel.resize(MP3_BUF_SIZE * 10);
 }
 
-MP3Processor::~MP3Processor() { deInit(); }
+MP3Processor::~MP3Processor() noexcept { deInit(); }
 
-size_t MP3Processor::getWorkBufferSize() const { return WAV_BUF_SIZE; }
+size_t MP3Processor::getWorkBufferSize() const noexcept { return WAV_BUF_SIZE; }
 
 bool MP3Processor::init(const int sampleRate, const int bitrate,
-                        const int mode) {
+                        const int mode) noexcept {
   deInit();
   lame_enc_handler = lame_init();
   if (!lame_enc_handler) {
@@ -58,7 +59,7 @@ bool MP3Processor::init(const int sampleRate, const int bitrate,
   return true;
 }
 
-void MP3Processor::deInit() {
+void MP3Processor::deInit() noexcept {
   bInitialized = false;
   if (lame_enc_handler) {
     lame_close((lame_global_flags *)lame_enc_handler);
@@ -70,7 +71,7 @@ void MP3Processor::deInit() {
   }
 }
 
-void MP3Processor::addNextInput(float *src) {
+void MP3Processor::addNextInput(float *src) noexcept {
   if (bInitialized) {
     const int encodedLength = lame_encode_buffer_interleaved_ieee_float(
         (lame_global_flags *)lame_enc_handler, src,
@@ -98,14 +99,15 @@ void MP3Processor::addNextInput(float *src) {
   }
 }
 
-bool MP3Processor::buffered(const double amount) const {
-  return outputPCMBuffer.size() >= outputPCMBuffer.capacity() * amount;
+bool MP3Processor::buffered(const double amount) const noexcept {
+  return (double)outputPCMBuffer.size() >=
+         (double)outputPCMBuffer.capacity() * amount;
 }
 
-bool MP3Processor::hasReadyOutput(const size_t size) const {
+bool MP3Processor::hasReadyOutput(const size_t size) const noexcept {
   return outputPCMBuffer.size() >= size;
 }
 
-size_t MP3Processor::getNextOutput(float *dst, const size_t maxsize) {
+size_t MP3Processor::getNextOutput(float *dst, const size_t maxsize) noexcept {
   return outputPCMBuffer.pull(dst, maxsize);
 }

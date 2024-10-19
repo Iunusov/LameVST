@@ -2,22 +2,23 @@
 
 #include "RingBuffer.h"
 
+#include <atomic>
 #include <vector>
 
 class MP3Processor {
 public:
-  MP3Processor();
-  ~MP3Processor();
-  size_t getWorkBufferSize() const;
-  bool init(const int sampleRate, const int bitrate, const int mode);
-  void deInit();
-  void addNextInput(float *src);
-  bool buffered(const double amount) const;
-  bool hasReadyOutput(const size_t size) const;
-  size_t getNextOutput(float *dst, const size_t maxsize);
+  MP3Processor() noexcept;
+  ~MP3Processor() noexcept;
+  size_t getWorkBufferSize() const noexcept;
+  bool init(const int, const int, const int) noexcept;
+  void deInit() noexcept;
+  void addNextInput(float *) noexcept;
+  bool buffered(const double) const noexcept;
+  bool hasReadyOutput(const size_t) const noexcept;
+  size_t getNextOutput(float *, const size_t) noexcept;
 
 private:
-  bool bInitialized = false;
+  std::atomic_bool bInitialized{};
   void *lame_enc_handler = nullptr;
   void *lame_dec_handler = nullptr;
   std::vector<unsigned char> mp3Buffer;

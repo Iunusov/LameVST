@@ -9,14 +9,15 @@ public:
    * Simple Circular buffer implementation, based on the array
    * @param max_size buffer max size
    */
-  RingBuffer(const size_t capacity) : CAPACITY(capacity), buffer_(capacity) {}
+  RingBuffer(const size_t capacity) noexcept
+      : CAPACITY(capacity), buffer_(capacity) {}
   /**
-  * Puts a chunk of data to the buffer
-  * @param data buffer with the data
-  * @param size size of the buffer
-  * @return true on success
-  */
-  bool push(const T *data, const size_t size) {
+   * Puts a chunk of data to the buffer
+   * @param data buffer with the data
+   * @param size size of the buffer
+   * @return true on success
+   */
+  bool push(const T *data, const size_t size) noexcept {
     if (!data || !size) {
       return false;
     }
@@ -33,12 +34,12 @@ public:
     return true;
   }
   /**
-  * Gets a chunk of data from the buffer
-  * @param data buffer
-  * @param size size of the buffer
-  * @return number of elements actually read
-  */
-  size_t pull(T *data, const size_t size) {
+   * Gets a chunk of data from the buffer
+   * @param data buffer
+   * @param size size of the buffer
+   * @return number of elements actually read
+   */
+  size_t pull(T *data, const size_t size) noexcept {
     if (!data || !size) {
       return 0;
     }
@@ -55,18 +56,16 @@ public:
     size_ -= returnCount;
     return returnCount;
   }
-  bool hasEnoughSpace(const size_t count) const {
+  bool hasEnoughSpace(const size_t count) const noexcept {
     return (size_ + count <= CAPACITY);
   }
-  size_t size() const {
-    return size_;
-  }
+  size_t size() const { return size_; }
   void reset() {
     size_ = 0;
     start_ = 0;
     end_ = 0;
   }
-  size_t capacity() const { return CAPACITY; }
+  size_t capacity() const noexcept { return CAPACITY; }
 
 private:
   const size_t CAPACITY;

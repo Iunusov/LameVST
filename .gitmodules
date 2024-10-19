@@ -1,0 +1,6 @@
+[submodule "deps/libmp3lame-CMAKE"]
+	path = deps/libmp3lame-CMAKE
+	url = https://github.com/R-Tur/libmp3lame-CMAKE
+[submodule "deps/VST_SDK_2.4"]
+	path = deps/VST_SDK_2.4
+	url = https://bitbucket.org/r-tur/vst_sdk_2.4.git
